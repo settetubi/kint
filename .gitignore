@@ -4,3 +4,4 @@
 /.idea
 /.bundle/
 npm-debug.log
+/logs

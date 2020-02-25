@@ -41,6 +41,44 @@ if (!\function_exists('d')) {
     Kint::$aliases[] = 'd';
 }
 
+
+if (!\function_exists('fint')) {
+    /**
+     * Alias of Kint::dump().
+     *
+     * @return int|string
+     */
+    function fint()
+    {
+        $args = \func_get_args();
+        Kint::$return = TRUE;
+        $a = \call_user_func_array(['Kint', 'dump'], $args);
+        $prev = file_get_contents('./logs/log.html' );
+        file_put_contents('./logs/log.html', $a.$prev  );
+    }
+
+    Kint::$aliases[] = 'fint';
+}
+
+
+if (!\function_exists('fint0')) {
+    /**
+     * Alias of Kint::dump().
+     *
+     * @return int|string
+     */
+    function fint0()
+    {
+        $args = \func_get_args();
+        Kint::$return = TRUE;
+        $a = \call_user_func_array(['Kint', 'dump'], $args);
+        file_put_contents('./logs/log.html', $a);
+    }
+
+    Kint::$aliases[] = 'fint0';
+}
+
+
 if (!\function_exists('s')) {
     /**
      * Alias of Kint::dump(), however the output is in plain text.

@@ -628,6 +628,94 @@ class Kint
         return 0;
     }
 
+
+    /**
+     * Dumps some data.
+     *
+     * Functionally equivalent to Kint::dump(1) or Kint::dump(debug_backtrace(true))
+     *
+     * @return int|string
+     */
+    public static function trump()
+    {
+        if (false === self::$enabled_mode) {
+            return 0;
+        }
+
+        Utils::normalizeAliases(self::$aliases);
+
+        $args = \func_get_args();
+
+        $call_info = self::getCallInfo(self::$aliases, \debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), \count($args));
+
+
+        $statics = self::getStatics();
+
+        if (\in_array('~', $call_info['modifiers'], true)) {
+            $statics['enabled_mode'] = self::MODE_TEXT;
+        }
+
+        $kintstance = self::createFromStatics($statics);
+        if (!$kintstance) {
+            // Should never happen
+            return 0; // @codeCoverageIgnore
+        }
+
+        if (\in_array('-', $call_info['modifiers'], true)) {
+            while (\ob_get_level()) {
+                \ob_end_clean();
+            }
+        }
+
+        $kintstance->setStatesFromStatics($statics);
+        $kintstance->setStatesFromCallInfo($call_info);
+
+        // If the call is Kint::dump(1) then dump a backtrace instead
+        if ($args === [1] && (!isset($call_info['params'][0]['name']) || '1' === $call_info['params'][0]['name'])) {
+            $args = \debug_backtrace(true);
+            $trace = [];
+
+            foreach ($args as $index => $frame) {
+                if (Utils::traceFrameIsListed($frame, self::$aliases)) {
+                    $trace = [];
+                }
+
+                $trace[] = $frame;
+            }
+
+            if (isset($call_info['callee']['function'])) {
+                $tracename = $call_info['callee']['function'].'(1)';
+                if (isset($call_info['callee']['class'], $call_info['callee']['type'])) {
+                    $tracename = $call_info['callee']['class'].$call_info['callee']['type'].$tracename;
+                }
+            } else {
+                $tracename = 'Kint\\Kint::trump(1)';
+            }
+
+            $tracebase = BasicObject::blank($tracename, 'debug_backtrace(true)');
+
+            $output = $kintstance->dumpAll([$trace], [$tracebase]);
+        } else {
+            $bases = self::getBasesFromParamInfo(
+                isset($call_info['params']) ? $call_info['params'] : [],
+                \count($args)
+            );
+            $output = $kintstance->dumpAll($args, $bases);
+        }
+
+        if (self::$return || \in_array('@', $call_info['modifiers'], true)) {
+            return $output;
+        }
+
+        echo $output;
+
+        if (\in_array('-', $call_info['modifiers'], true)) {
+            \flush(); // @codeCoverageIgnore
+        }
+
+        return 0;
+    }
+
     /**
      * generic path display callback, can be configured in app_root_dirs; purpose is
      * to show relevant path info and hide as much of the path as possible.
