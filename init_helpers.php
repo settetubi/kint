@@ -25,6 +25,9 @@
 
 use Kint\Kint;
 
+define( LOGDIR, 'logs' );
+define( LOGFILE, 'log.html' );
+
 if (!\function_exists('d')) {
     /**
      * Alias of Kint::dump().
@@ -52,9 +55,17 @@ if (!\function_exists('fint')) {
     {
         $args = \func_get_args();
         Kint::$return = TRUE;
-        $a = \call_user_func_array(['Kint', 'dump'], $args);
-        $prev = file_get_contents('./logs/log.html' );
-        file_put_contents('./logs/log.html', $a.$prev  );
+        $debugging_results = \call_user_func_array(['Kint', 'dump'], $args);
+        $here = dirname( __FILE__ );
+        $dir = "$here/".LOGDIR;
+        if ( !is_dir( $dir ) )
+            mkdir( $dir );
+
+        $logfile = "$dir/".LOGFILE;
+        if ( is_dir( $dir ) ){
+            $prev = file_get_contents($logfile);
+            file_put_contents($logfile, $debugging_results . $prev);
+        }
     }
 
     Kint::$aliases[] = 'fint';
@@ -71,8 +82,16 @@ if (!\function_exists('fint0')) {
     {
         $args = \func_get_args();
         Kint::$return = TRUE;
-        $a = \call_user_func_array(['Kint', 'dump'], $args);
-        file_put_contents('./logs/log.html', $a);
+        $debugging_results = \call_user_func_array(['Kint', 'dump'], $args);
+        $here = dirname( __FILE__ );
+        $dir = "$here/".LOGDIR;
+        if ( !is_dir( $dir ) )
+            mkdir( $dir );
+
+        $logfile = "$dir/".LOGFILE;
+        if ( is_dir( $dir ) ){
+            file_put_contents($logfile, $debugging_results);
+        }
     }
 
     Kint::$aliases[] = 'fint0';
