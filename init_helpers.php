@@ -25,8 +25,8 @@
 
 use Kint\Kint;
 
-define( LOGDIR, 'logs' );
-define( LOGFILE, 'log.html' );
+define( "LOGDIR", 'logs' );
+define( "LOGFILE", 'log.html' );
 
 if (!\function_exists('d')) {
     /**
